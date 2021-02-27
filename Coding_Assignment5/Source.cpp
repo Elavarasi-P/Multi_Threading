@@ -28,35 +28,51 @@ struct context
 		cout << "Input:" << input << endl;
 		cout << "Output:" << *output << endl;
 	}
-	void getValues(int varX,int varY)
+	void setValues(int varX,int varY)
 	{
 		input = varX;
 		*output = varY;
+	}
+	~context()
+	{
+		delete output;
+		cout << "Destructor executed"<<endl;
 	}
 };
 
 void evenSum(void*  param)
 {
 	cout << "\nExecuting Even Thread...";
-	context svarC=* (struct context*)param;;
-	struct context* cpy = reinterpret_cast<struct context*>(param);
-	int sum = 0;
-	for (int i = 0; i < svarC.input; i += 2)
-		sum += i;
-	svarC.getValues(svarC.input, sum);
-	*cpy = svarC;
+	struct context* cont = reinterpret_cast<struct context*>(param);
+	if (cont != NULL) {
+		int sum = 0;
+		for (int i = 0; i < cont->input; i += 2)
+			sum += i;
+		cont->setValues(cont->input, sum);
+	}
+	else
+	{
+		cout << "Invalid Param passed" << endl;
+	}
 }
 
 void oddSum(void* param)
 {
 	cout << "\nExecuting Odd Thread...";
-	context svarC = *(struct context*)param;
-	struct context* cpy = reinterpret_cast<struct context*>(param);
-	int sum = 0;
-	for (int i = 1; i < svarC.input; i += 2)
-		sum += i;
-	svarC.getValues(svarC.input, sum);
-	*cpy = svarC;
+	//context svarC = *(struct context*)param;
+	struct context* cont = reinterpret_cast<struct context*>(param);
+	if (cont != NULL) 
+	{
+		int sum = 0;
+		for (int i = 1; i < cont->input; i += 2)
+			sum += i;
+		cont->setValues(cont->input, sum);
+	}
+	//*cpy = svarC;
+	else
+	{
+	cout << "Invalid Param passed" << endl;
+	}
 }
 int main()
 {
@@ -66,12 +82,12 @@ int main()
 	HANDLE handleOdd=NULL;
 	DWORD dwEven=0,dwOdd=0;
 	int result = 0;
-	context svarA;
-	svarA.getValues(5, 0);
-	context svarB=svarA;
+	context varContA;
+	varContA.setValues(5, 0);
+	context varContB=varContA;
 	
-	void* vptr = reinterpret_cast<void*>(&svarA);
-	void* vptr1 = reinterpret_cast<void*>(&svarB);
+	void* vptr = reinterpret_cast<void*>(&varContA);
+	void* vptr1 = reinterpret_cast<void*>(&varContB);
 	
 	handleEven = (HANDLE)_beginthread(evenSum, 0,vptr);
 
@@ -115,9 +131,9 @@ int main()
 		}
 	}
 	cout << "\nEven Sum:" << endl;
-	svarA.display();
+	varContA.display();
 	cout << "\nOdd Sum:" <<endl;
-	svarB.display();
+	varContB.display();
 
 	return result;
 }
